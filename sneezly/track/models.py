@@ -36,7 +36,7 @@ class Day(models.Model):
 
 class EventType(models.Model):
 
-    name = models.CharField(max_length=20)
+    name = models.CharField(max_length=40)
 
     def __str__(self):
         return '<{} name={}>'.format(self.__class__.__name__, self.name)
@@ -49,4 +49,4 @@ class Event(models.Model):
 
     def __str__(self):
         return '<{} type={}, time={}>'.format(self.__class__.__name__,
-                                              self.type, self.time)
+                                              self.type.name, self.time)
