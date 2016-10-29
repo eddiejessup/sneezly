@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_extensions',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -126,4 +127,13 @@ STATIC_URL = '/static/'
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAdminUser',),
     'PAGE_SIZE': 10,
+}
+
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'asgi_redis.RedisChannelLayer',
+        # 'BACKEND': 'asgiref.inmemory.ChannelLayer',
+        'ROUTING': 'sneezly.routing.channel_routing',
+    },
 }
