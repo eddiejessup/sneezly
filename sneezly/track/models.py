@@ -1,8 +1,11 @@
+from datetime import date
+
 from django.db import models
+from django.utils import timezone
 
 
 class Day(models.Model):
-    date = models.DateField(auto_now=True, unique=True)
+    date = models.DateField(default=date.today, unique=True)
 
     DOVE = 'DV'
     SIMPLE = 'SM'
@@ -33,7 +36,7 @@ class Day(models.Model):
 
 class EventType(models.Model):
 
-    name = models.TextField()
+    name = models.CharField(max_length=20)
 
     def __str__(self):
         return '<{} name={}>'.format(self.__class__.__name__, self.name)
@@ -41,7 +44,7 @@ class EventType(models.Model):
 
 class Event(models.Model):
     type = models.ForeignKey(EventType, on_delete=models.CASCADE)
-    time = models.DateTimeField(auto_now=True)
+    time = models.DateTimeField(default=timezone.now)
     notes = models.TextField(blank=True)
 
     def __str__(self):
