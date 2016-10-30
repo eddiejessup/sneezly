@@ -1,0 +1,25 @@
+{% load static %}
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>Sneezly Chat</title>
+  <meta name="description" content="Chat with Sneezly">
+  <meta name="author" content="Elliot Marsden">
+
+  <link rel="stylesheet" href="{% static 'track/css/style.css' %}">
+
+</head>
+
+<body>
+    <div id="chatControls">
+        <input id="message" placeholder="Type your message">
+        <button id="send">Send</button>
+    </div>
+    <div id="chat"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.2/moment.js"></script>
+    <script src="{% static 'track/js/web_socket_chat.js' %}"></script>
+</body>
+</html>
