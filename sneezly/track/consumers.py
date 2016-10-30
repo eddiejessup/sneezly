@@ -1,30 +1,30 @@
-from channels import Group
+import json
+
+from channels import Channel, Group
 
 from . import models
 
 
-# Connected to websocket.connect
-def ws_add(message):
-    message.reply_channel.send({"accept": True})
-    Group("chat").add(message.reply_channel)
-
-
-def ws_message(message):
-    Group("chat").send({
-        'text': 'I hear you...',
+def slack_connect(message):
+    target = Channel('slack.send')
+    target.send({
+        'text': 'Hello! Sneezly here.',
+        'channel': 'general',
     })
-    text = message.content['text'].lower()
+
+
+def slack_message(message):
+    target = Channel('slack.send')
+    data = json.loads(message.content['text'].decode('utf-8'))
+    slack_channel = data['channel']
+    text = data['text']
     if any(s in text for s in ['sneeze', 'achoo']):
         SneezeEvent = models.EventType.objects.get(name__contains='neeze')
         ev = models.Event.objects.create(type=SneezeEvent)
         reply_text = 'Bless you! I heard you sneeze at {}'.format(ev.time)
     else:
         reply_text = 'huh?'
-    Group("chat").send({
+    target.send({
         'text': reply_text,
+        'channel': slack_channel,
     })
-
-
-# Connected to websocket.disconnect.
-def ws_disconnect(message):
-    Group("chat").discard(message.reply_channel)
