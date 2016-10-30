@@ -1,8 +1,16 @@
+from channels import Group
+
 from . import models
 
 
-def ws_echo(message):
-    message.reply_channel.send({
+# Connected to websocket.connect
+def ws_add(message):
+    message.reply_channel.send({"accept": True})
+    Group("chat").add(message.reply_channel)
+
+
+def ws_message(message):
+    Group("chat").send({
         'text': 'I hear you...',
     })
     text = message.content['text'].lower()
@@ -12,6 +20,11 @@ def ws_echo(message):
         reply_text = 'Bless you! I heard you sneeze at {}'.format(ev.time)
     else:
         reply_text = 'huh?'
-    message.reply_channel.send({
+    Group("chat").send({
         'text': reply_text,
     })
+
+
+# Connected to websocket.disconnect.
+def ws_disconnect(message):
+    Group("chat").discard(message.reply_channel)

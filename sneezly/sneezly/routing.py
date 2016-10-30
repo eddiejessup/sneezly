@@ -1,7 +1,9 @@
 from channels.routing import route
 
-from track.consumers import ws_echo
+from track import consumers as track_consumers
 
 channel_routing = [
-    route('websocket.receive', ws_echo),
+    route("websocket.connect", track_consumers.ws_add),
+    route("websocket.receive", track_consumers.ws_message),
+    route("websocket.disconnect", track_consumers.ws_disconnect),
 ]
