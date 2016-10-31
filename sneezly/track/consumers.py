@@ -18,10 +18,6 @@ def slack_connect(message):
     })
 
 
-def chunks(lst, chunk_size=2):
-    return (lst[i:i + n] for i in range(0, len(lst), n))
-
-
 def slack_message(message):
     target = Channel('slack.send')
     data = json.loads(message.content['text'].decode('utf-8'))
@@ -36,9 +32,10 @@ def slack_message(message):
     form_data = {}
 
     text = data['text']
-    words = text.split()
-    event_name = words[0]
-    pairs = [s.split('=') for s in words[1:]]
+    first_space = text.find(' ')
+    event_name = text[:first_space]
+    rest = text[first_space + 1:]
+    pairs = [s.split('=') for s in rest.split(',')]
 
     try:
         event_type = models.EventType.objects.get(name__iexact=event_name)
@@ -51,6 +48,8 @@ def slack_message(message):
     if pairs:
         attrs = {}
         for key, value in pairs:
+            key = key.strip()
+            value = value.strip()
             if key == '@':
                 form_data['time'] = calendar.parseDT(value)[0]
             else:
