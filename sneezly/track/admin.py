@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from .models import Day, EventType, Event
+from .import models
 
-admin.site.register(Day)
-admin.site.register(EventType)
-admin.site.register(Event)
+
+admin.site.register(models.EventType)
+admin.site.register(models.Event)

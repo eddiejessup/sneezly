@@ -25,7 +25,6 @@ from track import views as track_views
 router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
 router.register(r'groups', views.GroupViewSet)
-router.register(r'days', track_views.DayViewSet)
 router.register(r'event_types', track_views.EventTypeViewSet)
 router.register(r'events', track_views.EventViewSet)
 
