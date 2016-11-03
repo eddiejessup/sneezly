@@ -32,10 +32,14 @@ def slack_message(message):
     form_data = {}
 
     text = data['text']
-    first_space = text.find(' ')
-    event_name = text[:first_space]
-    rest = text[first_space + 1:]
-    pairs = [s.split('=') for s in rest.split(',')]
+    if ' ' in text:
+        first_space = text.find(' ')
+        event_name = text[:first_space]
+        the_rest = text[first_space + 1:]
+        pairs = [s.split('=') for s in the_rest.split(',')]
+    else:
+        event_name = text
+        pairs = []
 
     try:
         event_type = models.EventType.objects.get(name__iexact=event_name)
