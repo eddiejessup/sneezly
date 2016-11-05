@@ -64,6 +64,6 @@ def slack_message(message):
     if form.is_valid():
         ev = form.save()
         send('I heard a {} at {}'.format(ev.type.name, ev.time))
-    else:
-        send('Hmm, I do not understand:')
-        send(json.dumps(form.errors))
+    # else:
+    #     send('Hmm, I do not understand:')
+    #     send(json.dumps(form.errors))
