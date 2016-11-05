@@ -1,0 +1,77 @@
+---
+- hosts: all
+  vars:
+    http_port: 80
+    max_clients: 200
+  remote_user: ubuntu
+  tasks:
+  - name: Install list of packages
+    apt:
+      name: "{{item}}"
+      state: installed
+    with_items:
+      - virtualenv
+      - redis-server
+      - postgresql
+      - libpq-dev
+      - python-psycopg2
+    become: true
+  - name: Install list of python (2) packages for system
+    pip:
+      name: "{{item}}"
+      state: latest
+      executable: pip2
+    with_items:
+      - psycopg2
+      - pip
+    become: true
+  - name: Make sneezly virtualenv
+    pip:
+      name: pip
+      state: latest
+      virtualenv: /home/ubuntu/venvs/sneezly_env
+      virtualenv_python: python3.5
+  - name: Install list of python packages for sneezly
+    pip:
+      name: "{{item}}"
+      executable: /home/ubuntu/venvs/sneezly_env/bin/pip
+    with_items:
+      - Django
+      - django-extensions
+      - djangorestframework
+      - djangobot
+      - channels
+      - asgi-redis
+      - psycopg2
+      - redis
+      - arrow
+      - ipython
+      - pdbpp
+      - parsedatetime
+  - name: Clone sneezly repository
+    git:
+      repo: https://github.com/eddiejessup/sneezly.git
+      dest: ~/sneezly
+      accept_hostkey: true
+  - name: Copy sneezly app deployment settings
+    copy:
+      src: settings.ini
+      dest: ~/sneezly/sneezly/sneezly/
+  - name: Create database
+    postgresql_db:
+      name: sneezly
+    become: true
+    become_user: postgres
+  - name: Create sneezly database user and grant privileges
+    postgresql_user:
+      db: sneezly
+      name: ejm
+      password: sdenton55y
+      priv: ALL
+    become: true
+    become_user: postgres
+  # - name: Run Django migrations
+  #   django_manage:
+  #     command: migrate
+  #     app_path: ~/sneezly/sneezly
+  #     virtualenv: ~/venvs/sneezly_venv

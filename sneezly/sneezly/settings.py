@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import os
+from ConfigParser import RawConfigParser
+
+config = RawConfigParser()
+config.read('settings.ini')
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,10 +24,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '+z3uk5%$f38e=tezh11m^ld#*_t1+df#u&lyt^^(bfxt$11v7m'
+SECRET_KEY = config.get('secrets', 'SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config.getboolean('debug', 'DEBUG')
 
 ALLOWED_HOSTS = []
 
@@ -80,10 +84,10 @@ WSGI_APPLICATION = 'sneezly.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'sneezly',
-        'USER': 'ejm',
-        'PASSWORD': '',
-        'HOST': 'localhost',
+        'NAME': config.get('database', 'DATABASE_NAME'),
+        'USER': config.get('database', 'DATABASE_USER'),
+        'PASSWORD': config.get('database', 'DATABASE_PASSWORD'),
+        'HOST': config.get('database', 'DATABASE_HOST'),
         'PORT': '',
     }
 }
@@ -134,10 +138,14 @@ REST_FRAMEWORK = {
 }
 
 
+if config.getboolean('channels', 'REDIS_BACKEND'):
+    channel_backend = 'asgi_redis.RedisChannelLayer'
+else:
+    channel_backend = 'asgiref.inmemory.ChannelLayer'
+
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'asgi_redis.RedisChannelLayer',
-        # 'BACKEND': 'asgiref.inmemory.ChannelLayer',
+        'BACKEND': channel_backend,
         'ROUTING': 'sneezly.routing.channel_routing',
     },
 }
