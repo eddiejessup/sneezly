@@ -22,8 +22,9 @@
       state: latest
       executable: pip2
     with_items:
-      - psycopg2
       - pip
+      - psycopg2
+      - supervisor
     become: true
   - name: Make sneezly virtualenv
     pip:
@@ -75,3 +76,11 @@
       command: migrate
       app_path: ~/sneezly/sneezly
       virtualenv: ~/venvs/sneezly_env
+  - name: Start redis
+    command: redis-server --daemonize yes
+  - name: Copy supervisor daemon configuration file
+    copy:
+      src: supervisord.conf
+      dest: ~/
+  - name: Start supervisor daemon
+    command: supervisord -c ~/supervisord.conf
