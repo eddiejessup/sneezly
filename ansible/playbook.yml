@@ -78,6 +78,10 @@
       virtualenv: ~/venvs/sneezly_env
   - name: Start redis
     command: redis-server --daemonize yes
+  - name: Add to .profile to set Djangobot token environment variable
+    lineinfile:
+      dest: "~/.profile"
+      line: "export DJANGOBOT_TOKEN=xoxp-43568239299-43622383937-98046553446-843480c3df5123336390054a74e4bb5c"
   - name: Copy supervisor daemon configuration file
     copy:
       src: supervisord.conf
