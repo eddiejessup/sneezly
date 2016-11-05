@@ -67,8 +67,6 @@
       command: migrate
       app_path: ~/sneezly/sneezly
       virtualenv: ~/venvs/sneezly_env
-  - name: Start redis
-    command: redis-server --daemonize yes
   - name: Add to .profile to set Djangobot token environment variable
     lineinfile:
       dest: "~/.profile"
