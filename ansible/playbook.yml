@@ -71,6 +71,10 @@
     lineinfile:
       dest: "~/.profile"
       line: "export DJANGOBOT_TOKEN={{ sneezly['djangobot_token'] }}"
+  - name: Start redis server
+    service:
+      name: redis-server
+      state: started
   - name: Copy supervisor daemon configuration file
     copy:
       src: supervisord.conf
