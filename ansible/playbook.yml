@@ -70,8 +70,8 @@
       priv: ALL
     become: true
     become_user: postgres
-  # - name: Run Django migrations
-  #   django_manage:
-  #     command: migrate
-  #     app_path: ~/sneezly/sneezly
-  #     virtualenv: ~/venvs/sneezly_venv
+  - name: Run Django migrations
+    django_manage:
+      command: migrate
+      app_path: ~/sneezly/sneezly
+      virtualenv: ~/venvs/sneezly_env

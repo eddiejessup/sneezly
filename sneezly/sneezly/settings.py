@@ -11,9 +11,9 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import os
-from ConfigParser import RawConfigParser
+from configparser import ConfigParser
 
-config = RawConfigParser()
+config = ConfigParser()
 config.read('settings.ini')
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
