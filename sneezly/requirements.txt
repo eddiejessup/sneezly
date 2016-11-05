@@ -1,0 +1,12 @@
+arrow==0.8.0
+asgi-redis==0.14.1
+channels==0.17.3
+Django==1.10.3
+django-extensions==1.7.4
+djangobot==0.1
+djangorestframework==3.5.2
+ipython==5.1.0
+parsedatetime==2.1
+pdbpp==0.8.3
+psycopg2==2.6.2
+redis==2.10.5

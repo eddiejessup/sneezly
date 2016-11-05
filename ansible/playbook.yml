@@ -36,28 +36,15 @@
       state: latest
       virtualenv: /home/ubuntu/venvs/sneezly_env
       virtualenv_python: python3.5
-  - name: Install list of python packages for sneezly
-    pip:
-      name: "{{item}}"
-      executable: /home/ubuntu/venvs/sneezly_env/bin/pip
-    with_items:
-      - Django
-      - django-extensions
-      - djangorestframework
-      - djangobot
-      - channels
-      - asgi-redis
-      - psycopg2
-      - redis
-      - arrow
-      - ipython
-      - pdbpp
-      - parsedatetime
   - name: Clone sneezly repository
     git:
       repo: https://github.com/eddiejessup/sneezly.git
       dest: ~/sneezly
       accept_hostkey: true
+  - name: Install list of python packages for sneezly
+    pip:
+      requirements: ~/sneezly/sneezly/requirements.txt
+      executable: /home/ubuntu/venvs/sneezly_env/bin/pip
   - name: Copy sneezly app deployment settings
     copy:
       src: settings.ini
