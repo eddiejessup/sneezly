@@ -1,0 +1,9 @@
+{% if event_types %}
+    <ul>
+    {% for event_type in event_types %}
+        <li><button href="{% url 'sneezly:event-list' %}">{{ event_type.name }}</button></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No event types are available.</p>
+{% endif %}
