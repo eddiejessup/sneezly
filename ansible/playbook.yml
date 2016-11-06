@@ -32,7 +32,7 @@
       - supervisor
     become: true
   - name: Copy supervisor daemon configuration file
-    copy:
+    template:
       src: supervisord.conf
       dest: /etc/
     become: true
@@ -78,10 +78,6 @@
       command: migrate
       app_path: "{{ sneezly_app_path }}"
       virtualenv: "{{ sneezly_env_path }}"
-  - name: Add to .profile to set Djangobot token environment variable
-    lineinfile:
-      dest: "~/.profile"
-      line: "export DJANGOBOT_TOKEN={{ sneezly['djangobot_token'] }}"
   - name: Start redis server
     service:
       name: redis-server
