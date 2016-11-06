@@ -5,12 +5,14 @@
     sneezly_repo_path: "{{ home_path }}/sneezly"
     sneezly_app_path: "{{ sneezly_repo_path }}/sneezly"
     sneezly_env_path: "{{ home_path }}/venvs/sneezly_env"
+    database_name: sneezly
+    database_username: ejm
   remote_user: ubuntu
   tasks:
   - name: Include secret variables
     include_vars:
       file: secrets.yml
-      name: sneezly
+      name: secrets
   - name: Install system packages
     apt:
       name: "{{item}}"
@@ -22,7 +24,7 @@
       - libpq-dev
       - python-psycopg2
     become: true
-  - name: Install list of python (2) packages for system
+  - name: Install list of python packages for system
     pip:
       name: "{{item}}"
       state: latest
@@ -63,14 +65,14 @@
       dest: "{{ sneezly_app_path }}/sneezly/"
   - name: Create database
     postgresql_db:
-      name: sneezly
+      name: "{{ database_name }}"
     become: true
     become_user: postgres
   - name: Create sneezly database user and grant privileges
     postgresql_user:
-      db: sneezly
-      name: ejm
-      password: sdenton55y
+      name: "{{ database_username }}"
+      password: "{{ secrets['database_password'] }}"
+      db: "{{ database_name }}"
       priv: ALL
     become: true
     become_user: postgres
