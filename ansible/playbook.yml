@@ -7,6 +7,8 @@
     sneezly_app_path: "{{ sneezly_repo_path }}/sneezly"
     sneezly_env_path: "{{ home_path }}/venvs/sneezly_env"
     sneezly_static_path: "{{ sneezly_app_path }}/collectstatic"
+    daphne_port: 8080
+    nginx_port: 80
     database_name: sneezly
     database_username: ejm
   tasks:
@@ -63,7 +65,7 @@
     pip:
       requirements: "{{ sneezly_app_path }}/requirements.txt"
       executable: /home/ubuntu/venvs/sneezly_env/bin/pip
-  - name: Copy sneezly app deployment settings
+  - name: Render and copy sneezly app deployment settings template
     template:
       src: settings.ini
       dest: "{{ sneezly_app_path }}/sneezly/"
@@ -88,7 +90,7 @@
     with_items:
       - migrate
       - collectstatic
-  - name: Copy supervisor daemon configuration file
+  - name: Render and copy supervisor daemon configuration file template
     template:
       src: supervisord.conf
       dest: /etc/
@@ -109,8 +111,13 @@
       path: /etc/nginx/sites-enabled/default
       state: absent
     become: true
-  - name: Copy nginx site configuration
+  - name: Render and copy nginx site configuration template
     template:
       src: nginx.conf
       dest: /etc/nginx/sites-enabled/sneezly
+    become: true
+  - name: Restart nginx server
+    service:
+      name: redis-server
+      state: restarted
     become: true
