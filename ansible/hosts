@@ -5,3 +5,4 @@ localhost
 ansible_port=2222
 ansible_ssh_private_key_file=~/projects/sneezly/.vagrant/machines/default/virtualbox/private_key
 ansible_user=ubuntu
+database_host=localhost
