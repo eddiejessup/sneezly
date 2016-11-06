@@ -96,9 +96,9 @@
       src: supervisord.service
       dest: /etc/systemd/system/
     become: true
-  - name: Start supervisor daemon
+  - name: Restart supervisor daemon
     systemd:
       name: supervisord
-      state: started
+      state: restarted
       daemon_reload: yes
     become: true
