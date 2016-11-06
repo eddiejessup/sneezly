@@ -44,7 +44,7 @@ def slack_message(message):
     try:
         event_type = models.EventType.objects.get(name__iexact=event_name)
     except models.EventType.DoesNotExist:
-        send("Cannot find event type '{}'".format(event_name))
+        # send("Cannot find event type '{}'".format(event_name))
         return
     else:
         form_data['type'] = event_type.pk
