@@ -24,7 +24,7 @@
       - libpq-dev
       - python-psycopg2
     become: true
-  - name: Install list of python packages for system
+  - name: Install system python packages
     pip:
       name: "{{item}}"
       state: latest
@@ -34,53 +34,6 @@
       - psycopg2
       - supervisor
     become: true
-  - name: Copy supervisor daemon configuration file
-    template:
-      src: supervisord.conf
-      dest: /etc/
-    become: true
-  - name: Copy supervisor daemon systemd script
-    copy:
-      src: supervisord.service
-      dest: /etc/systemd/system/
-    become: true
-  - name: Make sneezly virtualenv
-    pip:
-      name: pip
-      state: latest
-      virtualenv: "{{ sneezly_env_path }}"
-      virtualenv_python: python3.5
-  - name: Clone sneezly repository
-    git:
-      repo: https://github.com/eddiejessup/sneezly.git
-      dest: "{{ sneezly_repo_path }}"
-      accept_hostkey: true
-  - name: Install list of python packages for sneezly
-    pip:
-      requirements: "{{ sneezly_app_path }}/requirements.txt"
-      executable: /home/ubuntu/venvs/sneezly_env/bin/pip
-  - name: Copy sneezly app deployment settings
-    template:
-      src: settings.ini
-      dest: "{{ sneezly_app_path }}/sneezly/"
-  - name: Create database
-    postgresql_db:
-      name: "{{ database_name }}"
-    become: true
-    become_user: postgres
-  - name: Create sneezly database user and grant privileges
-    postgresql_user:
-      name: "{{ database_username }}"
-      password: "{{ secrets['database_password'] }}"
-      db: "{{ database_name }}"
-      priv: ALL
-    become: true
-    become_user: postgres
-  - name: Run Django migrations
-    django_manage:
-      command: migrate
-      app_path: "{{ sneezly_app_path }}"
-      virtualenv: "{{ sneezly_env_path }}"
   - name: Start redis server
     service:
       name: redis-server
@@ -90,6 +43,53 @@
     service:
       name: postgresql
       state: started
+    become: true
+  - name: Clone sneezly repository
+    git:
+      repo: https://github.com/eddiejessup/sneezly.git
+      dest: "{{ sneezly_repo_path }}"
+      accept_hostkey: true
+  - name: Make sneezly virtualenv
+    pip:
+      name: pip
+      state: latest
+      virtualenv: "{{ sneezly_env_path }}"
+      virtualenv_python: python3.5
+  - name: Install python packages for sneezly app
+    pip:
+      requirements: "{{ sneezly_app_path }}/requirements.txt"
+      executable: /home/ubuntu/venvs/sneezly_env/bin/pip
+  - name: Copy sneezly app deployment settings
+    template:
+      src: settings.ini
+      dest: "{{ sneezly_app_path }}/sneezly/"
+  - name: Create sneezly app database
+    postgresql_db:
+      name: "{{ database_name }}"
+    become: true
+    become_user: postgres
+  - name: Create sneezly app database user and grant privileges
+    postgresql_user:
+      name: "{{ database_username }}"
+      password: "{{ secrets['database_password'] }}"
+      db: "{{ database_name }}"
+      priv: ALL
+    become: true
+    become_user: postgres
+  - name: Run sneezly Django migrations
+    django_manage:
+      command: migrate
+      app_path: "{{ sneezly_app_path }}"
+      virtualenv: "{{ sneezly_env_path }}"
+  - name: Copy supervisor daemon configuration file
+    template:
+      src: supervisord.conf
+      dest: /etc/
+    become: true
+  - name: Copy supervisor daemon systemd script
+    copy:
+      src: supervisord.service
+      dest: /etc/systemd/system/
     become: true
   - name: Start supervisor daemon
     systemd:
