@@ -78,11 +78,14 @@
       priv: ALL
     become: true
     become_user: postgres
-  - name: Run sneezly Django migrations
+  - name: Run sneezly Django migrations, and collect static files
     django_manage:
-      command: migrate
+      command: "{{ item }}"
       app_path: "{{ sneezly_app_path }}"
       virtualenv: "{{ sneezly_env_path }}"
+    with_items:
+      - migrate
+      - collectstatic
   - name: Copy supervisor daemon configuration file
     template:
       src: supervisord.conf
