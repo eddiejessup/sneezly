@@ -21,6 +21,7 @@
       - virtualenv
       - redis-server
       - postgresql
+      - nginx
       - libpq-dev
       - python-psycopg2
       - python
@@ -101,4 +102,14 @@
       name: supervisord
       state: restarted
       daemon_reload: yes
+    become: true
+  - name: Remove default nginx site configuration
+    file:
+      path: /etc/nginx/sites-enabled/default
+      state: absent
+    become: true
+  - name: Copy nginx site configuration
+    copy:
+      src: nginx.conf
+      dest: /etc/nginx/sites-enabled/sneezly
     become: true
