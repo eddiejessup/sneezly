@@ -1,15 +1,16 @@
 ---
 - hosts: all
   vars:
-    http_port: 80
-    max_clients: 200
+    sneezly_repo_path: ~/sneezly
+    sneezly_app_path: "{{ sneezly_repo_path }}/sneezly"
+    sneezly_env_path: "~/venvs/sneezly_env"
   remote_user: ubuntu
   tasks:
-  - name: Include some variables
+  - name: Include secret variables
     include_vars:
       file: secrets.yml
       name: sneezly
-  - name: Install list of packages
+  - name: Install system packages
     apt:
       name: "{{item}}"
       state: installed
@@ -30,25 +31,35 @@
       - psycopg2
       - supervisor
     become: true
+  - name: Copy supervisor daemon configuration file
+    copy:
+      src: supervisord.conf
+      dest: /etc/
+    become: true
+  - name: Copy supervisor daemon systemd script
+    copy:
+      src: supervisord.service
+      dest: /etc/systemd/system/
+    become: true
   - name: Make sneezly virtualenv
     pip:
       name: pip
       state: latest
-      virtualenv: /home/ubuntu/venvs/sneezly_env
+      virtualenv: "{{ sneezly_env_path }}"
       virtualenv_python: python3.5
   - name: Clone sneezly repository
     git:
       repo: https://github.com/eddiejessup/sneezly.git
-      dest: ~/sneezly
+      dest: "{{ sneezly_repo_path }}"
       accept_hostkey: true
   - name: Install list of python packages for sneezly
     pip:
-      requirements: ~/sneezly/sneezly/requirements.txt
+      requirements: "{{ sneezly_app_path }}/requirements.txt"
       executable: /home/ubuntu/venvs/sneezly_env/bin/pip
   - name: Copy sneezly app deployment settings
     copy:
       src: settings.ini
-      dest: ~/sneezly/sneezly/sneezly/
+      dest: "{{ sneezly_app_path }}/sneezly/"
   - name: Create database
     postgresql_db:
       name: sneezly
@@ -65,8 +76,8 @@
   - name: Run Django migrations
     django_manage:
       command: migrate
-      app_path: ~/sneezly/sneezly
-      virtualenv: ~/venvs/sneezly_env
+      app_path: "{{ sneezly_app_path }}"
+      virtualenv: "{{ sneezly_env_path }}"
   - name: Add to .profile to set Djangobot token environment variable
     lineinfile:
       dest: "~/.profile"
@@ -75,9 +86,15 @@
     service:
       name: redis-server
       state: started
-  - name: Copy supervisor daemon configuration file
-    copy:
-      src: supervisord.conf
-      dest: ~/
+    become: true
+  - name: Start postgresql server
+    service:
+      name: postgresql
+      state: started
+    become: true
   - name: Start supervisor daemon
-    command: supervisord -c ~/supervisord.conf
+    systemd:
+      name: supervisord
+      state: started
+      daemon_reload: yes
+    become: true
