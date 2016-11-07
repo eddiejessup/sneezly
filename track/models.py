@@ -13,7 +13,7 @@ class EventType(models.Model):
     def __str__(self):
         return '<{}: {}>'.format(self.__class__.__name__, self.name)
 
-    def clean_attribute(self, key):
+    def _clean_attribute(self, key):
         valid_values = self.attr_schema[key]
         # Check key maps to a list.
         if not isinstance(valid_values, list):
@@ -35,7 +35,13 @@ class EventType(models.Model):
         super().clean(*args, **kwargs)
         # Check attributes that are specified are valid.
         for key in self.attr_schema:
-            self.clean_attribute(key)
+            self._clean_attribute(key)
+
+
+class EventTypeAlias(models.Model):
+
+    name = models.CharField(max_length=40)
+    event_type = models.ForeignKey(EventType, on_delete=models.CASCADE)
 
 
 class Event(models.Model):
@@ -48,7 +54,7 @@ class Event(models.Model):
         return '<{} type={}, time={}>'.format(self.__class__.__name__,
                                               self.type.name, self.time)
 
-    def clean_attribute(self, key):
+    def _clean_attribute(self, key):
         schema = self.type.attr_schema
         if key not in schema:
             raise ValidationError(
@@ -65,7 +71,7 @@ class Event(models.Model):
         super().clean(*args, **kwargs)
         # Check attributes that are specified are valid.
         for key in self.attrs:
-            self.clean_attribute(key)
+            self._clean_attribute(key)
         # Check all schema attributes are specified.
         for schema_key in self.type.attr_schema:
             if schema_key not in self.attrs:
