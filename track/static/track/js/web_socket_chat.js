@@ -8,10 +8,28 @@ function id(id) {
     return document.getElementById(id);
 }
 
+function htmlEscape(str) {
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+function htmlUnescape(str){
+    return str
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&');
+}
+
 // Update the chat-panel with a new entry.
 function updateChatPanel(user, message) {
     var now = moment().format();
-    insert("chat", "<p>" + now + ", " + user + ": " + message + "</p>");
+    insert("chat", "<p>" + now + ", " + user + ": " + htmlEscape(message) + "</p>");
 }
 
 // Update the chat-panel after a received message.

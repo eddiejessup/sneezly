@@ -6,6 +6,7 @@ from channels import Channel, Group
 
 from . import models
 from . import forms
+from . import parse_utils
 
 
 calendar = parsedatetime.Calendar()
@@ -28,8 +29,33 @@ def slack_connect(message):
     send_to_slack(s, target_channel=target, target_slack_channel='general')
 
 
-def parse_text_to_form_data(text, send_func):
+def _execute_text(text, send_func):
     form_data = {}
+    text = text.strip()
+
+    # Special commands.
+    # Do not log these, especially 'repeat', as we could get into an infinite
+    # loop.
+
+    if parse_utils.is_repeat_command(text):
+        latest_entry = models.MessageLogEntry.objects.latest()
+        _execute_text(latest_entry.message, send_func)
+        return
+    else:
+        log_form = forms.MessageLogEntryForm(data={'message': text})
+        if log_form.is_valid():
+            log_form.save()
+        else:
+            send_func('Not logging message:')
+            send_func(json.dumps(log_form.errors))
+
+    if text == 'undo':
+        latest_ev = models.Event.objects.latest('time_created')
+        obj_str = latest_ev.__str__()
+        latest_ev.delete()
+        send_func('Deleted {}'.format(obj_str))
+        return
+
     if ' ' in text:
         first_space = text.find(' ')
         event_name = text[:first_space]
@@ -56,27 +82,6 @@ def parse_text_to_form_data(text, send_func):
             else:
                 attrs[key] = value
         form_data['attrs'] = json.dumps(attrs)
-    return form_data
-
-
-def execute_text(text, send_func):
-    sneezly_tag = '[Sneezly]'
-
-    def _send_func(s):
-        send_func('{} {}'.format(sneezly_tag, s))
-
-    # Make sure we do not reply to ourselves.
-    if text.startswith(sneezly_tag):
-        return
-
-    try:
-        form_data = parse_text_to_form_data(text, send_func=send_func)
-    except HandledError:
-        return
-    except Exception as e:
-        send_func('Hmm, I do not understand:')
-        send_func(str(e))
-        raise
 
     form = forms.EventForm(data=form_data)
     if form.is_valid():
@@ -86,6 +91,26 @@ def execute_text(text, send_func):
     else:
         send_func('Hmm, I do not understand:')
         send_func(json.dumps(form.errors))
+
+
+def execute_text(text, send_func):
+    sneezly_tag = '[Sneezly]'
+
+    def signed_send_func(s):
+        send_func('{} {}'.format(sneezly_tag, s))
+
+    # Make sure we do not reply to ourselves.
+    if text.startswith(sneezly_tag):
+        return
+
+    try:
+        _execute_text(text, send_func=signed_send_func)
+    except HandledError:
+        return
+    except Exception as e:
+        send_func('Hmm, I do not understand:')
+        send_func(str(e))
+        raise
 
 
 def slack_message(message):

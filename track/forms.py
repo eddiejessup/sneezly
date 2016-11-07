@@ -12,3 +12,14 @@ class EventForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['time'].required = False
+
+
+class MessageLogEntryForm(forms.ModelForm):
+
+    class Meta:
+        model = models.MessageLogEntry
+        fields = ['message']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # self.fields['time'].required = False

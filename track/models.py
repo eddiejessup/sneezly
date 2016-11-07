@@ -4,6 +4,8 @@ from django.utils import timezone
 from django.contrib.postgres.fields import JSONField
 from django.utils.translation import ugettext_lazy as _
 
+from . import parse_utils
+
 
 class EventType(models.Model):
 
@@ -80,3 +82,26 @@ class Event(models.Model):
                 raise ValidationError(
                     _("Attribute '{}' not specified")
                     .format(schema_key))
+
+
+class MessageLogEntry(models.Model):
+
+    message = models.TextField()
+    time_created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'MessageLogEntry'
+        verbose_name_plural = 'MessageLogEntries'
+        get_latest_by = 'time_created'
+
+    def __str__(self):
+        return '<{}: {}. "{}">'.format(self.__class__.__name__,
+                                       self.time_created,
+                                       self.message)
+
+    def clean(self, *args, **kwargs):
+        super().clean(*args, **kwargs)
+        if parse_utils.is_repeat_command(self.message):
+            raise ValidationError(
+                _("Cannot record a message that will repeat: {}")
+                .format(self.message))
