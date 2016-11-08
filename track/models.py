@@ -65,6 +65,10 @@ class Event(models.Model):
                 _("Attribute '{}' not in event schema keys {}.")
                 .format(key, list(schema.keys())))
         value = self.attrs[key]
+        try:
+            value = int(value)
+        except ValueError:
+            pass
         valid_values = schema[key]
         if valid_values and value not in valid_values:
             raise ValidationError(
