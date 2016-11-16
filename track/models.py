@@ -7,14 +7,19 @@ from django.utils.translation import ugettext_lazy as _
 from . import parse_utils
 
 
+def get_event_type_name_field():
+    return models.CharField(max_length=40, unique=True)
+
+
 class EventType(models.Model):
 
-    name = models.CharField(max_length=40)
+    name = get_event_type_name_field()
     attr_schema = JSONField(default=dict, blank=True)
 
     def __str__(self):
         return '<{}: {}>'.format(self.__class__.__name__, self.name)
 
+    # TODO: Validate event type name to avoid keywords like 'time'.
     def _clean_attribute(self, key):
         valid_values = self.attr_schema[key]
         # Check key maps to a list.
@@ -42,8 +47,13 @@ class EventType(models.Model):
 
 class EventTypeAlias(models.Model):
 
-    name = models.CharField(max_length=40)
+    # TODO: Clean to check that an alias is never the same as a canonical event
+    # type name, and clean it as if it were an event type name.
+    name = get_event_type_name_field()
     event_type = models.ForeignKey(EventType, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name_plural = 'Event Type Aliases'
 
 
 class Event(models.Model):
@@ -94,8 +104,8 @@ class MessageLogEntry(models.Model):
     time_created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = 'MessageLogEntry'
-        verbose_name_plural = 'MessageLogEntries'
+        verbose_name = 'Message Log Entry'
+        verbose_name_plural = 'Message Log Entries'
         get_latest_by = 'time_created'
 
     def __str__(self):

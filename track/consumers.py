@@ -29,6 +29,14 @@ def slack_connect(message):
     send_to_slack(s, target_channel=target, target_slack_channel='general')
 
 
+def resolve_event_name_to_type(event_name):
+    try:
+        return models.EventType.objects.get(name__iexact=event_name)
+    except models.EventType.DoesNotExist:
+        alias_obj = models.EventTypeAlias.objects.get(name__iexact=event_name)
+        return alias_obj.event_type
+
+
 def _execute_text(text, send_func):
     form_data = {}
     text = text.strip()
@@ -58,17 +66,17 @@ def _execute_text(text, send_func):
 
     if ' ' in text:
         first_space = text.find(' ')
-        event_name = text[:first_space]
+        raw_event_name = text[:first_space]
         the_rest = text[first_space + 1:]
         pairs = [s.split('=') for s in the_rest.split(',')]
     else:
-        event_name = text
+        raw_event_name = text
         pairs = []
 
     try:
-        event_type = models.EventType.objects.get(name__iexact=event_name)
-    except models.EventType.DoesNotExist:
-        send_func('Cannot find event type {}'.format(event_name))
+        event_type = resolve_event_name_to_type(raw_event_name)
+    except models.EventTypeAlias.DoesNotExist:
+        send_func('Cannot find event type {}'.format(raw_event_name))
         raise HandledError
     form_data['type'] = event_type.pk
 
@@ -77,8 +85,10 @@ def _execute_text(text, send_func):
         for key, value in pairs:
             key = key.strip()
             value = value.strip()
-            if key == '@':
+            if key in ('@', 't', 'time'):
                 form_data['time'] = calendar.parseDT(value)[0]
+            elif key in ('d', 'desc', 'description', 'notes'):
+                form_data['notes'] = value
             else:
                 attrs[key] = value
         form_data['attrs'] = json.dumps(attrs)
